@@ -13,7 +13,7 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import Settings from "./Settings";
 
-const API_BASE_URL = "http://localhost:5000"; // Ton API Flask
+const API_BASE_URL = "https://scrofulous-pseudoemotionally-charley.ngrok-free.dev";
 
 
 function Dashboard() {
