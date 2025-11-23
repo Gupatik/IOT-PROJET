@@ -13,7 +13,7 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import Settings from "./Settings";
 
-const API_BASE_URL = "http://localhost:5000"; // Ton API Flask
+const API_BASE_URL = "http://localhost:5000"; 
 
 
 function Dashboard() {
@@ -68,7 +68,7 @@ useEffect(() => {
   loadPlant();
 
   // Optionnel : refresh toutes les X secondes pour simuler temps réel
-  const interval = setInterval(loadPlant, 5000);
+  const interval = setInterval(loadPlant, 3000);
   return () => clearInterval(interval);
 
 }, [selectedPlant]);

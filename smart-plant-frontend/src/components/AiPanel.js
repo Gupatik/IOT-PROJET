@@ -10,7 +10,7 @@ function AiPanel({ plantData }) {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:8000/get_predictions", {
+      const res = await fetch("http://127.0.0.1:5001/get_predictions", {
         method: "GET",
       });
 

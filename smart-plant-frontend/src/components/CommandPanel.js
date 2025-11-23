@@ -1,108 +1,107 @@
 import React, { useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
-import WaterDropIcon from '@mui/icons-material/WaterDrop';
-import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 
-import Snackbar from "@mui/material/Snackbar";
-import Alert from "@mui/material/Alert";
-import Slide from "@mui/material/Slide";
-
-function CommandPanel({ plants, selectedPlant, commandStats, setCommandStats }) {
+function CommandPanel({ plants, selectedPlant }) {
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
-  const [alertType, setAlertType] = useState(""); 
+  const [alertType, setAlertType] = useState("");
   const [open, setOpen] = useState(false);
 
+  // Correct variable for pump duration
+  const [pumpDuration, setPumpDuration] = useState(5000);
+
   const handleClose = (_, reason) => {
-    if (reason === "clickaway") return; // keep behavior consistent
+    if (reason === "clickaway") return;
     setOpen(false);
   };
 
   const sendCommand = async (command) => {
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const res = await fetch(`http://localhost:5000/plants/${selectedPlant}/command`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command }),
-    });
+    try {
+      const res = await fetch(`http://localhost:5000/plants/${selectedPlant}/command`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (res.ok) {
-      setAlertMessage(`Commande "${command}" envoyée avec succès !`);
-      setAlertType("success");
-    } else {
-      setAlertMessage(data?.error || "Erreur lors de l'envoi");
+      if (res.ok) {
+        setAlertMessage(`Commande "${command}" envoyée avec succès !`);
+        setAlertType("success");
+      } else {
+        setAlertMessage(data?.error || "Erreur lors de l'envoi");
+        setAlertType("error");
+      }
+    } catch {
+      setAlertMessage("Erreur réseau");
       setAlertType("error");
+    } finally {
+      setLoading(false);
+      setOpen(true);
     }
-  } catch {
-    setAlertMessage("Erreur réseau");
-    setAlertType("error");
-  } finally {
-    setLoading(false);
-    setOpen(true);
-  }
-};
-
+  };
 
   return (
-    <div className="command-panel-card">
-      <h3>Contrôles de la plante</h3>
+    <div className="command-panel-card pro-card">
+      <h3 className="section-title">Panneau de Commandes</h3>
 
-      <div className="command-buttons">
-        <button
-          className="btn water"
-          onClick={() => sendCommand("water")}
-          disabled={loading}
-        >
-          <WaterDropIcon style={{ marginRight: 6 }} /> Water
-        </button>
+      {/* LED SECTION */}
+      <div className="command-section">
+        <h4>Lumière LED</h4>
+        <div className="command-buttons">
+          <button className="btn" onClick={() => sendCommand("SET_LED_COLOR:RED")}>RED</button>
+          <button className="btn" onClick={() => sendCommand("SET_LED_COLOR:GREEN")}>GREEN</button>
+          <button className="btn" onClick={() => sendCommand("SET_LED_COLOR:BLUE")}>BLUE</button>
+          <button className="btn" onClick={() => sendCommand("SET_LED_COLOR:YELLOW")}>YELLOW</button>
+          <button className="btn" onClick={() => sendCommand("SET_LED_COLOR:PURPLE")}>PURPLE</button>
+          <button className="btn" onClick={() => sendCommand("SET_LED_COLOR:CYAN")}>CYAN</button>
+          <button className="btn" onClick={() => sendCommand("SET_LED_COLOR:WHITE")}>WHITE</button>
+          <button className="btn" onClick={() => sendCommand("LED_OFF")}>LED OFF</button>
+        </div>
+      </div>
 
-        <button
-          className="btn light-on"
-          onClick={() => sendCommand("light_on")}
-          disabled={loading}
-        >
-          <LightbulbIcon style={{ marginRight: 6 }} /> Light ON
-        </button>
+      {/* WATER PUMP */}
+      <div className="water-pump-section">
+        <h4>Pompe à eau</h4>
 
-        <button
-          className="btn light-off"
-          onClick={() => sendCommand("light_off")}
-          disabled={loading}
-        >
-          <DarkModeIcon style={{ marginRight: 6 }} /> Light OFF
-        </button>
+        <div>
+          <input
+            type="number"
+            className="water-input"
+            value={pumpDuration}
+            onChange={(e) => setPumpDuration(e.target.value)}
+          />
+          ms
+        </div>
+
+        <div className="water-buttons">
+          <button className="btn" onClick={() => sendCommand(`WATER_PUMP:${pumpDuration}`)}>
+            Démarrer
+          </button>
+          <button className="btn" onClick={() => sendCommand("STOP_WATER")}>
+            Stop
+          </button>
+        </div>
       </div>
 
       {loading && (
         <div className="loading-spinner">
-          <CircularProgress size={32} color="success" />
+          <CircularProgress size={32} />
         </div>
       )}
 
-      {/* Centered popup Snackbar with Slide animation
-      <Snackbar
-        open={open}
-        onClose={handleClose}
-        autoHideDuration={3000}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        // keep the Snackbar element visible while the Slide animates the Alert
-      >
+      {/* Snackbar alert (optional) */}
+      {/* 
+      <Snackbar open={open} onClose={handleClose} autoHideDuration={3000} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Slide direction="down" in={open}>
-          <Alert
-            onClose={handleClose}
-            severity={alertType || "info"}
-            variant="filled"
-            sx={{ minWidth: 300, textAlign: "center" }}
-          >
+          <Alert severity={alertType} variant="filled" sx={{ minWidth: 250, textAlign: "center" }}>
             {alertMessage}
           </Alert>
         </Slide>
-      </Snackbar> */}
+      </Snackbar>
+      */}
     </div>
   );
 }
