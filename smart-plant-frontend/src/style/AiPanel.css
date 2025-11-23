@@ -147,3 +147,49 @@
     font-size: 1rem;
   }
 }
+
+/* Résultats */
+.ai-result {
+  margin-top: 24px;
+}
+
+.predictions-container {
+  display: grid;
+  grid-template-columns: 1fr; /* Une colonne, simple et lisible */
+  gap: 16px;
+}
+
+/* Carte individuelle de prédiction */
+.prediction-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  background-color: #f9fafb;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.prediction-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+}
+
+/* Titres dans la carte */
+.prediction-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+/* Paragraphes */
+.prediction-card p {
+  margin: 4px 0;
+  color: #374151;
+  font-size: 14px;
+}
+
+/* Texte modèle */
+.prediction-card small {
+  display: block;
+  margin-top: 8px;
+  color: #6b7280;
+}

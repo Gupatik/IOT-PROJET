@@ -13,8 +13,7 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 import Settings from "./Settings";
 
-// --- URL NGROK CORRIGÉE ---
-const API_BASE_URL = process.env.REACT_APP_API_URL || "https://scrofulous-pseudoemotionally-charley.ngrok-free.dev";
+const API_BASE_URL = "http://localhost:5000"; 
 
 // --- CONFIGURATION AXIOS ---
 // On force le header ici au cas où index.js n'aurait pas été mis à jour correctement
@@ -40,48 +39,49 @@ function Dashboard() {
 
   useEffect(() => {
     if (location.pathname.includes("settings")) setActiveItem("settings");
-  }, [location]);
+}, [location]);
+useEffect(() => {
+  const loadPlants = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/admin/all-data`);
+      const plantsData = res.data.plants || {}; // Récupère les plantes
+      // Convertir en array pour le select
+      const plantsArray = Object.keys(plantsData).map((id) => ({
+        id,
+        name: plantsData[id].name || id, // Si pas de nom, afficher l'id
+      }));
+      setPlants(plantsArray);
 
-  useEffect(() => {
-    const loadPlants = async () => {
-      try {
-        // Utilisation de apiClient au lieu de axios direct
-        const res = await apiClient.get("/admin/all-data");
-        const plantsData = res.data.plants || {}; 
-        
-        const plantsArray = Object.keys(plantsData).map((id) => ({
-          id,
-          name: plantsData[id].name || id,
-        }));
-        setPlants(plantsArray);
+      // Sélectionner la première plante par défaut
+      if (plantsArray.length > 0) setSelectedPlant(plantsArray[0].id);
+    } catch (error) {
+      console.error("Erreur lors du chargement des plantes:", error);
+    }
+  };
+  loadPlants();
+}, []);
 
-        if (plantsArray.length > 0) setSelectedPlant(plantsArray[0].id);
-      } catch (error) {
-        console.error("Erreur lors du chargement des plantes:", error);
-      }
-    };
-    loadPlants();
-  }, []);
 
-  useEffect(() => {
-    if (!selectedPlant) return;
+useEffect(() => {
+  if (!selectedPlant) return;
 
-    const loadPlant = async () => {
-      try {
-        // Utilisation de apiClient au lieu de axios direct
-        const res = await apiClient.get(`/plants/${selectedPlant}/state`);
-        setPlantData(res.data);
-      } catch (error) {
-        console.error("Erreur lors du chargement des données de la plante:", error);
-        setPlantData(null);
-      }
-    };
-    loadPlant();
+  const loadPlant = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/plants/${selectedPlant}/state`);
+      setPlantData(res.data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des données de la plante:", error);
+      setPlantData(null);
+    }
+  };
+  loadPlant();
 
-    const interval = setInterval(loadPlant, 5000);
-    return () => clearInterval(interval);
+  // Optionnel : refresh toutes les X secondes pour simuler temps réel
+  const interval = setInterval(loadPlant, 3000);
+  return () => clearInterval(interval);
 
-  }, [selectedPlant]);
+}, [selectedPlant]);
+
 
   const renderContent = () => {
     switch (activeItem) {

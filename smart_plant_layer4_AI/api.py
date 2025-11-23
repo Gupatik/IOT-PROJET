@@ -5,10 +5,12 @@ import numpy as np
 import json
 import os
 import joblib
+from flask_cors import CORS
+
 from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
-
+CORS(app)
 # =============================
 #   CHARGEMENT MODELES IA
 # =============================

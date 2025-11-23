@@ -93,7 +93,7 @@ class EmotionEngine:
 
 class DecisionMaker:
     def decide_action(self, emotion: str):
-        if emotion == "assoiffé": return "WATER_PUMP:3000"
+        if emotion == "assoiffé": return "WATER_PUMP:5000"
         if emotion == "stressé": return "SET_FAN_SPEED:150"
         if emotion == "heureux": return "SET_LED_COLOR:GREEN"
         return None
