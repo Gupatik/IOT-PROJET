@@ -8,6 +8,10 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import Slide from "@mui/material/Slide";
 
+// --- CORRECTION 1 : DÉFINIR L'URL ICI ---
+// Remplace le lien ci-dessous par ton lien Ngrok ACTUEL si ce n'est pas le bon
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://scrofulous-pseudoemotionally-charley.ngrok-free.dev"; 
+
 function CommandPanel({ plants, selectedPlant, commandStats, setCommandStats }) {
   const [loading, setLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -15,38 +19,41 @@ function CommandPanel({ plants, selectedPlant, commandStats, setCommandStats }) 
   const [open, setOpen] = useState(false);
 
   const handleClose = (_, reason) => {
-    if (reason === "clickaway") return; // keep behavior consistent
+    if (reason === "clickaway") return; 
     setOpen(false);
   };
 
   const sendCommand = async (command) => {
-  setLoading(true);
+    setLoading(true);
+    try {
+      // Utilisation de la variable API_BASE_URL définie plus haut
+      const res = await fetch(`${API_BASE_URL}/plants/${selectedPlant}/command`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true" // INDISPENSABLE pour Ngrok
+        }, 
+        body: JSON.stringify({ command }),
+      });
+      
+      const data = await res.json();
 
-  try {
-    const res = await fetch(`http://localhost:5000/plants/${selectedPlant}/command`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ command }),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      setAlertMessage(`Commande "${command}" envoyée avec succès !`);
-      setAlertType("success");
-    } else {
-      setAlertMessage(data?.error || "Erreur lors de l'envoi");
+      if (res.ok) {
+        setAlertMessage(`Commande "${command}" envoyée avec succès !`);
+        setAlertType("success");
+      } else {
+        setAlertMessage(data?.error || "Erreur lors de l'envoi");
+        setAlertType("error");
+      }
+    } catch (error) {
+      console.error("Erreur commande:", error);
+      setAlertMessage("Erreur réseau : Vérifiez Ngrok");
       setAlertType("error");
+    } finally {
+      setLoading(false);
+      setOpen(true);
     }
-  } catch {
-    setAlertMessage("Erreur réseau");
-    setAlertType("error");
-  } finally {
-    setLoading(false);
-    setOpen(true);
-  }
-};
-
+  };
 
   return (
     <div className="command-panel-card">
@@ -84,13 +91,12 @@ function CommandPanel({ plants, selectedPlant, commandStats, setCommandStats }) 
         </div>
       )}
 
-      {/* Centered popup Snackbar with Slide animation
+      {/* --- CORRECTION 2 : LE SNACKBAR DOIT ÊTRE ACTIF --- */}
       <Snackbar
         open={open}
         onClose={handleClose}
         autoHideDuration={3000}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        // keep the Snackbar element visible while the Slide animates the Alert
       >
         <Slide direction="down" in={open}>
           <Alert
@@ -102,7 +108,7 @@ function CommandPanel({ plants, selectedPlant, commandStats, setCommandStats }) 
             {alertMessage}
           </Alert>
         </Slide>
-      </Snackbar> */}
+      </Snackbar>
     </div>
   );
 }
