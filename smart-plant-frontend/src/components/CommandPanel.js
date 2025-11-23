@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
+import Snackbar from "@mui/material/Snackbar";
+import Alert from "@mui/material/Alert";
+import Slide from "@mui/material/Slide";
+
+// 1. URL NGROK (Vérifie qu'elle est identique à celle du Terminal Noir)
+const API_BASE_URL = "https://scrofulous-pseudoemotionally-charley.ngrok-free.dev";
 
 function CommandPanel({ plants, selectedPlant }) {
   const [loading, setLoading] = useState(false);
@@ -7,7 +13,7 @@ function CommandPanel({ plants, selectedPlant }) {
   const [alertType, setAlertType] = useState("");
   const [open, setOpen] = useState(false);
 
-  // Correct variable for pump duration
+  // Variable pour la durée d'arrosage
   const [pumpDuration, setPumpDuration] = useState(5000);
 
   const handleClose = (_, reason) => {
@@ -19,9 +25,13 @@ function CommandPanel({ plants, selectedPlant }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`http://localhost:5000/plants/${selectedPlant}/command`, {
+      // 2. CORRECTION : Utilisation de l'URL Ngrok + Headers obligatoires
+      const res = await fetch(`${API_BASE_URL}/plants/${selectedPlant}/command`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "ngrok-skip-browser-warning": "true" // Indispensable pour Ngrok
+        },
         body: JSON.stringify({ command }),
       });
 
@@ -34,8 +44,9 @@ function CommandPanel({ plants, selectedPlant }) {
         setAlertMessage(data?.error || "Erreur lors de l'envoi");
         setAlertType("error");
       }
-    } catch {
-      setAlertMessage("Erreur réseau");
+    } catch (error) {
+      console.error("Erreur commande:", error);
+      setAlertMessage("Erreur réseau (Vérifiez Ngrok)");
       setAlertType("error");
     } finally {
       setLoading(false);
@@ -92,16 +103,14 @@ function CommandPanel({ plants, selectedPlant }) {
         </div>
       )}
 
-      {/* Snackbar alert (optional) */}
-      {/* 
+      {/* J'ai dé-commenté le Snackbar pour que tu voies les messages de succès/erreur */}
       <Snackbar open={open} onClose={handleClose} autoHideDuration={3000} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Slide direction="down" in={open}>
-          <Alert severity={alertType} variant="filled" sx={{ minWidth: 250, textAlign: "center" }}>
+          <Alert severity={alertType || "info"} variant="filled" sx={{ minWidth: 250, textAlign: "center" }}>
             {alertMessage}
           </Alert>
         </Slide>
       </Snackbar>
-      */}
     </div>
   );
 }
