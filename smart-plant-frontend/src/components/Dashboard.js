@@ -1,20 +1,29 @@
 import React, { useState, useEffect } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
-import Sidebar from "../components/Sidebar";
-import PlantStatusCard from "../components/PlantStatusCard";
-import RealtimeMeasureCard from "../components/RealtimeMeasureCard";
-import ChartsSection from "../components/ChartsSection";
-import CommandPanel from "../components/CommandPanel";
-import AiPanel from "../components/AiPanel";
-import NotificationsPanel from "../components/NotificationsPanel";
+import Sidebar from "./Sidebar";
+import PlantStatusCard from "./PlantStatusCard";
+import RealtimeMeasureCard from "./RealtimeMeasureCard";
+import ChartsSection from "./ChartsSection";
+import CommandPanel from "./CommandPanel";
+import AiPanel from "./AiPanel";
+import NotificationsPanel from "./NotificationsPanel";
 import "../style/dashboard.css";
-import PlantHistoryGrid from "../components/HistoryTable";
+import PlantHistoryGrid from "./HistoryTable";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import Settings from "./Settings";
 
 const API_BASE_URL = "http://localhost:5000"; 
 
+// --- CONFIGURATION AXIOS ---
+// On force le header ici au cas où index.js n'aurait pas été mis à jour correctement
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    "ngrok-skip-browser-warning": "true",
+    "Content-Type": "application/json",
+  },
+});
 
 function Dashboard() {
   const [activeItem, setActiveItem] = useState("plant");
@@ -28,7 +37,7 @@ function Dashboard() {
   });
   const location = useLocation();
 
-useEffect(() => {
+  useEffect(() => {
     if (location.pathname.includes("settings")) setActiveItem("settings");
 }, [location]);
 useEffect(() => {
@@ -150,7 +159,7 @@ useEffect(() => {
       case "prediction":
         return (
           <div className="dashboard-content">
-            <h2>Prévoir l'état future de la plante</h2>
+            <h2>Prévoir l'état futur de la plante</h2>
             <AiPanel plantData={plantData} />
           </div>
         );
@@ -158,7 +167,6 @@ useEffect(() => {
       case "settings":
         return (
           <div className="dashboard-content">
-            
             <Settings/>
           </div>
         );
@@ -169,38 +177,34 @@ useEffect(() => {
   };
 
   return (
-  <div className="dashboard-container">
-    <Sidebar activeItem={activeItem} setActiveItem={setActiveItem} />
+    <div className="dashboard-container">
+      <Sidebar activeItem={activeItem} setActiveItem={setActiveItem} />
 
-    <main className="dashboard-main">
+      <main className="dashboard-main">
+        {(activeItem === "plant" ||
+          activeItem === "statistiques" ||
+          activeItem === "history") && (
+          <div className="plant-selector-global">
+            <label>Plante: </label>
+            <select
+              onChange={(e) => setSelectedPlant(e.target.value)}
+              value={selectedPlant}
+            >
+              {plants.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
-      {/* 🌿 SELECTEUR GLOBAL — affiché seulement dans certaines pages */}
-      {(activeItem === "plant" ||
-        activeItem === "statistiques" ||
-        activeItem === "history") && (
-        <div className="plant-selector-global">
-          <label>Plante: </label>
-          <select
-            onChange={(e) => setSelectedPlant(e.target.value)}
-            value={selectedPlant}
-          >
-            {plants.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+        {renderContent()}
+      </main>
 
-      {/* Contenu dynamique */}
-      {renderContent()}
-    </main>
-
-    <NotificationsPanel plantId={selectedPlant} />
-  </div>
-);
-
+      <NotificationsPanel plantId={selectedPlant} />
+    </div>
+  );
 }
 
 export default Dashboard;

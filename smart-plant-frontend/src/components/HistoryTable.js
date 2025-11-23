@@ -3,6 +3,9 @@ import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import CircularProgress from "@mui/material/CircularProgress";
 
+// --- URL NGROK (Indispensable pour que Netlify voie ton PC) ---
+const API_BASE_URL = "https://scrofulous-pseudoemotionally-charley.ngrok-free.dev";
+
 export default function PlantHistoryGrid({ selectedPlant }) {
   const [allHistory, setAllHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,8 +17,15 @@ export default function PlantHistoryGrid({ selectedPlant }) {
     const loadHistory = async () => {
       setLoading(true);
       try {
+        // --- CORRECTION : Utilisation de l'URL Ngrok + Headers de sécurité ---
         const res = await axios.get(
-          `http://127.0.0.1:5000/plants/${selectedPlant}/history`
+          `${API_BASE_URL}/plants/${selectedPlant}/history`,
+          {
+            headers: {
+              "ngrok-skip-browser-warning": "true", // <--- La clé pour débloquer Ngrok
+              "Content-Type": "application/json",
+            }
+          }
         );
 
         const history = res.data || [];
@@ -23,10 +33,10 @@ export default function PlantHistoryGrid({ selectedPlant }) {
         const formatted = history.map((h, index) => ({
           id: index,
           plantName: selectedPlant,
-          time: h.timestamp,
+          time: h.timestamp || h.time, // Gestion des deux formats possibles
           humidity: h.humidity,
           temperature: h.temperature,
-          light: h.lightLevel,
+          light: h.lightLevel || h.light,
           soilMoisture: h.soilMoisture,
           emotion: h.emotion,
         }));

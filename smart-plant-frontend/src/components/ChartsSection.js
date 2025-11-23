@@ -8,7 +8,8 @@ import { PieChart } from "@mui/x-charts/PieChart";
 
 import { getDatabase, ref, onValue } from "firebase/database";
 
-const API_BASE_URL = "http://localhost:5000";
+// URL Ngrok (Vérifie qu'elle est à jour sur ton écran noir)
+const API_BASE_URL = "https://scrofulous-pseudoemotionally-charley.ngrok-free.dev";
 
 function ChartsSection({ plantId }) {
   const [history, setHistory] = useState([]);
@@ -24,7 +25,13 @@ function ChartsSection({ plantId }) {
 
     const fetchHistory = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/plants/${plantId}/history`);
+        // --- CORRECTION ICI : Ajout du header pour passer la sécurité Ngrok ---
+        const res = await axios.get(`${API_BASE_URL}/plants/${plantId}/history`, {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+            "Content-Type": "application/json",
+          }
+        });
 
         const cleaned = (res.data || []).map((h) => ({
           humidity: h.humidity ?? 0,
@@ -44,32 +51,30 @@ function ChartsSection({ plantId }) {
   }, [plantId]);
 
   // 🔹 Fetch command stats from Firebase
-useEffect(() => {
-  if (!plantId) return;
+  useEffect(() => {
+    if (!plantId) return;
 
-  const db = getDatabase();
-  const commandsRef = ref(db, `plants/${plantId}/commands`);
+    const db = getDatabase();
+    const commandsRef = ref(db, `plants/${plantId}/commands`);
 
-  const unsubscribe = onValue(commandsRef, (snapshot) => {
-    const commands = snapshot.val() || {};
-    const stats = { water: 0, light_on: 0, light_off: 0 };
+    const unsubscribe = onValue(commandsRef, (snapshot) => {
+      const commands = snapshot.val() || {};
+      const stats = { water: 0, light_on: 0, light_off: 0 };
 
-    Object.values(commands).forEach((cmd) => {
-      const type = (cmd.command || "").toLowerCase().trim(); // <-- ici on utilise 'command'
-      
-      if (type === "water") stats.water += 1;
-      if (type === "light_on") stats.light_on += 1;
-      if (type === "light_off") stats.light_off += 1;
+      Object.values(commands).forEach((cmd) => {
+        const type = (cmd.command || "").toLowerCase().trim(); 
+        
+        if (type === "water") stats.water += 1;
+        if (type === "light_on") stats.light_on += 1;
+        if (type === "light_off") stats.light_off += 1;
+      });
+
+      console.log("Stats calculées:", stats);
+      setCommandStats(stats);
     });
 
-    console.log("Stats calculées:", stats);
-    setCommandStats(stats);
-  });
-
-  return () => unsubscribe();
-}, [plantId]);
-
-
+    return () => unsubscribe();
+  }, [plantId]);
 
   if (!history || history.length === 0) return null;
 
