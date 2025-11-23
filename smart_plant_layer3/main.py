@@ -355,6 +355,26 @@ class APIService:
             except Exception as e:
                 print(f"[CDN] Erreur list_user_files: {e}")
                 return jsonify({"error": "Erreur lors de la récupération des fichiers"}), 500
+    # --- NOUVELLE ROUTE : PASSERELLE VERS L'IA (PORT 5001) ---
+        @self.app.route('/get_predictions', methods=['GET'])
+        def proxy_predictions():
+            try:
+                # 1. Le Layer 3 appelle le Layer 4 en local (C'est autorisé car c'est le même PC)
+                print("[API Layer 3] Demande de prédictions au Layer 4 (Port 5001)...")
+                response = requests.get("http://localhost:5001/get_predictions", timeout=5)
+                
+                # 2. On récupère la réponse de l'IA
+                ai_data = response.json()
+                
+                # 3. On la renvoie telle quelle à Netlify
+                return jsonify(ai_data), response.status_code
+
+            except requests.exceptions.ConnectionError:
+                print("[API Layer 3] Erreur : Le Layer 4 (IA) n'est pas lancé sur le port 5001 !")
+                return jsonify({"error": "Service IA (Layer 4) indisponible. Lancez prediction_api.py !"}), 503
+            except Exception as e:
+                print(f"[API Layer 3] Erreur interne : {e}")
+                return jsonify({"error": str(e)}), 500
 
     def run(self, host="0.0.0.0", port=5000):
         self.app.run(host=host, port=port, debug=False, use_reloader=False)
