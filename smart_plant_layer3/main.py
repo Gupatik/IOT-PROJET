@@ -22,8 +22,8 @@ MQTT_PORT = int(os.environ.get("MQTT_PORT", 8883))
 MQTT_USERNAME = os.environ.get("MQTT_USERNAME", "hope_231")
 MQTT_PASSWORD = os.environ.get("MQTT_PASSWORD", "Japodisehell1234")
 # Topic par défaut compatible avec la plupart des ESP : "plant/+/telemetry"
-MQTT_TELEMETRY_TOPIC_TEMPLATE = os.environ.get("MQTT_TELEMETRY_TOPIC_TEMPLATE", "plant/+/telemetry")
-MQTT_COMMAND_TOPIC_TEMPLATE = os.environ.get("MQTT_COMMAND_TOPIC_TEMPLATE", "plant/{device_id}/commands")
+MQTT_TELEMETRY_TOPIC_TEMPLATE = os.environ.get("MQTT_TELEMETRY_TOPIC_TEMPLATE", "planty/+/telemetry")
+MQTT_COMMAND_TOPIC_TEMPLATE = os.environ.get("MQTT_COMMAND_TOPIC_TEMPLATE", "planty/{device_id}/commands")
 
 # Cloudinary (optionnel)
 cloudinary.config(
